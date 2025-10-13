@@ -13,6 +13,7 @@ def find_plate_contours(path):
         if i == 0:
             continue
 
+
         # Approximate contour shape
         approx = cv.approxPolyDP(contour, 0.01 * cv.arcLength(contour, True), True)
 
