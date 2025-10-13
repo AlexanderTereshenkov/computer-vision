@@ -189,6 +189,4 @@ pyrightconfig.json
 # Ignore all local history of files
 .history
 .ionide
-*.jpg
 *.mp4
-*.png
