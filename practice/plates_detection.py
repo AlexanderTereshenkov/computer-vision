@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-img = cv.imread("car_plates_img/car_p_2.jpg")
+img = cv.imread("car_plates_img/car_p_4.jpg")
 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 _, th_img = cv.threshold(img, 103, 255, cv.THRESH_BINARY)
 
@@ -57,7 +57,7 @@ rotated = cv.warpAffine(img, M, (w, h), flags=cv.INTER_CUBIC)
 x, y, w, h = cv.boundingRect(cv.boxPoints(((rect[0]), (rect[1]), 0)))
 cropped = rotated[y:y+h, x:x+w]
 
-img2 = cv.imread("car_plates_img/car_p_3.jpg")
+img2 = cv.imread("car_plates_img/car_p_4.jpg")
 img2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
 
 plt.subplot(121)
