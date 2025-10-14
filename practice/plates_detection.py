@@ -1,53 +1,73 @@
 import cv2 as cv
+import numpy as np
+import matplotlib.pyplot as plt
+
+img = cv.imread("car_plates_img/car_p_2.jpg")
+img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+_, th_img = cv.threshold(img, 103, 255, cv.THRESH_BINARY)
+
+contours, hierarchy = cv.findContours(th_img, cv.RETR_EXTERNAL,
+                                            cv.CHAIN_APPROX_NONE)
 
 
-def find_plate_contours(path):
-    img = cv.imread("car_plates_img/car_p_1.jpg")
-    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    _, th_img = cv.threshold(img, 185, 255, cv.THRESH_BINARY)
-    th2 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,\
-            cv.THRESH_BINARY,11,2)
-    contours, hierarchy = cv.findContours(th2, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+area = -1
+x_plate, y_plate, w_plate, h_plate = 0, 0, 0, 0
+plate_cnt = None
 
-    for i, contour in enumerate(contours):
-        if i == 0:
-            continue
+for cnt in contours:
+    x, y, w, h = cv.boundingRect(cnt)
+    aspect = w / h
+    if aspect > 3 and aspect < 7:
+        count_area = cv.contourArea(cnt)
+        if count_area > area:
+            area = count_area
+            x_plate, y_plate, w_plate, h_plate = x, y, w, h
+            plate_cnt = cnt
 
+# rect = cv.minAreaRect(plate_cnt)
+# print(rect)
+# center, angle, scale = rect[0], rect[2], 1
+# height, width = img.shape
+# center = (int(width / 2), int(height / 2))
+# M = cv.getRotationMatrix2D(center, angle, scale)
 
-        # Approximate contour shape
-        approx = cv.approxPolyDP(contour, 0.01 * cv.arcLength(contour, True), True)
+# croped_img = img[y_plate:y_plate + h_plate, x_plate:x_plate + w_plate]
 
-        # Draw contour
-        cv.drawContours(th2, [contour], 0, (0, 0, 255), 5)
+# rotated_image = cv.warpAffine(img, M, img.shape)
+# cv.imshow("AAAAA", rotated_image)
+# cv.waitKey(0)
 
-        # Find center
-        # M = cv.moments(contour)
-        # if M['m00'] != 0:
-        #     x = int(M['m10'] / M['m00'])
-        #     y = int(M['m01'] / M['m00'])
+rect = cv.minAreaRect(plate_cnt)
+box = cv.boxPoints(rect)
+box = np.intp(box)
 
-        # # Detect shape
-        # sides = len(approx)
-        # if sides == 3:
-        #     label = 'Triangle'
-        # elif sides == 4:
-        #     label = 'Quadrilateral'
-        # elif sides == 5:
-        #     label = 'Pentagon'
-        # elif sides == 6:
-        #     label = 'Hexagon'
-        # else:
-        #     label = 'Circle'
+# Угол
+angle = rect[2]
+if rect[1][0] < rect[1][1]:
+    angle += 90
 
-        # cv.putText(img, label, (x, y), cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-    return img
+# Матрица поворота
+(h, w) = img.shape
+M = cv.getRotationMatrix2D(rect[0], angle, 1.0)
 
+# Поворот изображения
+rotated = cv.warpAffine(img, M, (w, h), flags=cv.INTER_CUBIC)
 
-# for i in range(50, 255, 10):
-#     img = read_img_threshhold("car_plates_img/car_p_1.jpg", i)
-#     cv.imshow(str(i), img)
-#     cv.waitKey(0)
+# После поворота — вырезаем номер
+x, y, w, h = cv.boundingRect(cv.boxPoints(((rect[0]), (rect[1]), 0)))
+cropped = rotated[y:y+h, x:x+w]
 
-img = find_plate_contours("car_plates_img/car_p_1.jpg")
-cv.imshow("abob", img)
-cv.waitKey(0)
+img2 = cv.imread("car_plates_img/car_p_3.jpg")
+img2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
+
+plt.subplot(121)
+plt.imshow(img2, cmap="gray")
+plt.title('Original')
+plt.xticks([])
+plt.yticks([])
+plt.subplot(122)
+plt.imshow(cropped, cmap="gray")
+plt.title('Croped')
+plt.xticks([])
+plt.yticks([])
+plt.show()
