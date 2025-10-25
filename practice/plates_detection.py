@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-img = cv.imread("car_plates_img/car_p_4.jpg")
+img = cv.imread("car_plates_img/car_p_3.jpg")
 img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 _, th_img = cv.threshold(img, 103, 255, cv.THRESH_BINARY)
 
@@ -41,23 +41,21 @@ rect = cv.minAreaRect(plate_cnt)
 box = cv.boxPoints(rect)
 box = np.intp(box)
 
-# Угол
+
 angle = rect[2]
 if rect[1][0] < rect[1][1]:
     angle += 90
 
-# Матрица поворота
+
 (h, w) = img.shape
 M = cv.getRotationMatrix2D(rect[0], angle, 1.0)
 
-# Поворот изображения
 rotated = cv.warpAffine(img, M, (w, h), flags=cv.INTER_CUBIC)
 
-# После поворота — вырезаем номер
 x, y, w, h = cv.boundingRect(cv.boxPoints(((rect[0]), (rect[1]), 0)))
 cropped = rotated[y:y+h, x:x+w]
 
-img2 = cv.imread("car_plates_img/car_p_4.jpg")
+img2 = cv.imread("car_plates_img/car_p_3.jpg")
 img2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
 
 plt.subplot(121)
